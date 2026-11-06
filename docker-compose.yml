@@ -1,0 +1,34 @@
+# Design scaffold: FastAPI + MLflow tracking server on one Compose network.
+# Verify the MLflow image tag/flags against current MLflow docs before reuse.
+services:
+  api:
+    build: .
+    image: ml-inference-api:1.0
+    container_name: ml-api
+    ports:
+      - "8000:8000"
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MODEL_PATH: /app/models/model.joblib
+    depends_on:
+      - mlflow
+
+  mlflow:
+    # Keep the server version equal to `mlflow` in requirements-dev.txt
+    image: ghcr.io/mlflow/mlflow:v2.17.2
+    container_name: mlflow
+    ports:
+      - "5000:5000"
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri sqlite:////mlflow/mlflow.db
+      --default-artifact-root mlflow-artifacts:/
+      --serve-artifacts
+      --artifacts-destination /mlflow/artifacts
+    volumes:
+      - mlflow-data:/mlflow
+
+volumes:
+  mlflow-data:

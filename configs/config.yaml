@@ -1,0 +1,39 @@
+# Central configuration for the house-price pipeline.
+# Change values here instead of editing code.
+
+paths:
+  raw_data: data/raw/house_prices.csv
+  processed_data: data/processed/house_prices_clean.csv
+  model: models/model.joblib
+  metrics_report: reports/metrics.json
+  evaluation_report: reports/evaluation_report.md
+  predictions_sample: reports/sample_predictions.csv
+
+data:
+  target: price
+  numeric_features: [area_sqft, bedrooms, bathrooms, age_years, location_score]
+  categorical_features: [neighborhood]
+  # Business rules used for cleaning (rows outside these ranges are dropped)
+  valid_ranges:
+    area_sqft: [200, 10000]
+    bedrooms: [1, 10]
+    bathrooms: [1, 10]
+    age_years: [0, 100]
+    location_score: [0, 10]
+    price: [1000, 5000000]
+  allowed_neighborhoods: [urban, suburban, rural]
+  synthetic_rows: 1500        # used by src/generate_data.py
+
+training:
+  random_state: 42
+  test_size: 0.2
+
+model:
+  type: random_forest         # random_forest | linear_regression
+  n_estimators: 100
+  max_depth: 8
+
+mlflow:
+  enabled: true               # silently skipped if mlflow is not installed
+  experiment_name: house-price-service
+  tracking_uri: null          # null -> use MLFLOW_TRACKING_URI env var or local ./mlruns
